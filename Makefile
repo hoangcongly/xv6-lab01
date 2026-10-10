@@ -95,7 +95,8 @@ endif
 CFLAGS += $(XCFLAGS)
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
-# CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
+CFLAGS += -march=rv64g -mabi=lp64
+ASFLAGS = -march=rv64g -mabi=lp64
 CFLAGS += -fno-common -nostdlib
 CFLAGS += -fno-builtin-strncpy -fno-builtin-strncmp -fno-builtin-strlen -fno-builtin-memset
 CFLAGS += -fno-builtin-memmove -fno-builtin-memcmp -fno-builtin-log -fno-builtin-bzero
@@ -134,6 +135,9 @@ $(OBJS): EXTRAFLAG := $(KCSANFLAG)
 
 $K/%.o: $K/%.c
 	$(CC) $(CFLAGS) $(EXTRAFLAG) -c -o $@ $<
+
+$K/%.o: $K/%.S
+	$(CC) $(CFLAGS) $(ASFLAGS) -c -o $@ $<
 
 
 $U/initcode: $U/initcode.S
@@ -194,7 +198,9 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
-
+	$U/_sleeptest\
+	$U/_tree\
+	$U/_du\
 
 
 
