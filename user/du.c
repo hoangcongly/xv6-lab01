@@ -33,18 +33,24 @@ long du(char *path, int otp_a, int otp_s, int is_root)
     if(st.type == T_FILE){
         close(fd);
 
-        if(otp_a){
+        // Với file là đường dẫn gốc và dùng -s, vẫn phải in tổng của path.
+        // Các file con chỉ được in khi có -a.
+        if((otp_a && !otp_s) || (is_root && otp_s)){
             printf("%d\t%s\n", (int)st.size, path);
-
         }
         return st.size;
     }
 
-    // nếu không phải là thư mục thì đóng file và thoát
     if(st.type != T_DIR){
         close(fd);
         return 0;
     }
+
+    if(strlen(path) + 1 + DIRSIZ + 1 > sizeof(buf)){
+    printf("du: path too long\n");   
+    close(fd);
+    return 0;                           
+} 
 
     // chuẩn bị tiền tố đường dẫn "path/" trong buf để sẵn sàng ghép tên các file con bên dưới
     strcpy(buf, path);
@@ -59,13 +65,13 @@ long du(char *path, int otp_a, int otp_s, int is_root)
         if(de.inum == 0)
             continue;
 
-        // bỏ qua thư mục "." và ".." để tránh lặp vô tận
-        if(strcmp(de.name, ".") == 0 || strcmp(de.name, "..") == 0)
-            continue;
-
-        // nối tên thư mục/file con vào tên thư mục cha đã tạo ở trên để tạo thành đường dẫn đầy đủ
+        // Nối tên mục con vào đường dẫn cha
         memmove(p, de.name, DIRSIZ);
-        p[DIRSIZ] = 0;
+        p[DIRSIZ] = '\0';
+
+        // Bỏ qua "." và ".."
+        if(strcmp(p, ".") == 0 || strcmp(p, "..") == 0)
+            continue;
         
         // gọi đệ quy để tính dung lượng của file/thư mục con và cộng dồn vào tổng
         total += du(buf,  otp_a,  otp_s, 0);
@@ -92,6 +98,10 @@ int main(int argc, char *argv[]){
             otp_a = 1;
         else if(strcmp(argv[i],"-s")==0)
             otp_s = 1;
+        else if(argv[i][0] == '-'){
+            printf("usage: du [path] [-a] [-s]\n");
+            exit(1);
+        }
         else{
             path = argv[i];
         }
