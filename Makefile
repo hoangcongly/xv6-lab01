@@ -203,6 +203,8 @@ UPROGS=\
 	$U/_primes\
 	$U/_tree\
 	$U/_du\
+	$U/_cp\
+	$U/_diff\
 
 
 
